@@ -3,10 +3,10 @@ import { StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 
-export default function HaritaScreen() {
+export default function MissionsScreen() {
   return (
     <ThemedView style={styles.container}>
-      <ThemedText type="title">Harita</ThemedText>
+      <ThemedText type="title">Missions</ThemedText>
     </ThemedView>
   );
 }

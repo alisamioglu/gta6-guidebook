@@ -21,11 +21,11 @@ export default function AppTabs() {
       <TabSlot style={{ height: '100%' }} />
       <TabList asChild>
         <CustomTabList>
-          <TabTrigger name="gorevler" href="/" asChild>
-            <TabButton>Görevler</TabButton>
+          <TabTrigger name="missions" href="/missions" asChild>
+            <TabButton>Missions</TabButton>
           </TabTrigger>
-          <TabTrigger name="harita" href="/harita" asChild>
-            <TabButton>Harita</TabButton>
+          <TabTrigger name="map" href="/map" asChild>
+            <TabButton>Map</TabButton>
           </TabTrigger>
         </CustomTabList>
       </TabList>
@@ -55,7 +55,7 @@ export function CustomTabList(props: TabListProps) {
     <View {...props} style={styles.tabListContainer}>
       <ThemedView type="backgroundElement" style={styles.innerContainer}>
         <ThemedText type="smallBold" style={styles.brandText}>
-          GTA 6 Rehber
+          GTA 6 Guide
         </ThemedText>
 
         {props.children}
