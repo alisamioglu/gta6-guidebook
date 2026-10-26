@@ -7,21 +7,21 @@ import '@/global.css';
 
 import { Platform } from 'react-native';
 
+// the app is always dark, vice city style
+const vice = {
+  text: '#ffffff',
+  background: '#0E0B14',
+  backgroundElement: '#1B1626',
+  backgroundSelected: '#2B2340',
+  textSecondary: '#A9A3B8',
+  pink: '#FF4FA3',
+  teal: '#22D3C5',
+  amber: '#FFB547',
+} as const;
+
 export const Colors = {
-  light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
-  },
-  dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
-  },
+  light: vice,
+  dark: vice,
 } as const;
 
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;

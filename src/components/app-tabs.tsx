@@ -1,17 +1,17 @@
 import { NativeTabs } from 'expo-router/native-tabs';
-import { useColorScheme } from 'react-native';
 
 import { Colors } from '@/constants/theme';
 
 export default function AppTabs() {
-  const scheme = useColorScheme();
-  const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
+  const colors = Colors.dark;
 
   return (
     <NativeTabs
       backgroundColor={colors.background}
-      indicatorColor={colors.backgroundElement}
-      labelStyle={{ selected: { color: colors.text } }}>
+      indicatorColor={colors.backgroundSelected}
+      tintColor={colors.pink}
+      iconColor={{ default: colors.textSecondary, selected: colors.pink }}
+      labelStyle={{ default: { color: colors.textSecondary }, selected: { color: colors.pink } }}>
       <NativeTabs.Trigger name="missions">
         <NativeTabs.Trigger.Label>Missions</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="checklist" md="checklist" />
