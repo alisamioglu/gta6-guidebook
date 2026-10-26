@@ -1,6 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 
+import { PIN_CATEGORIES, PinCategory } from '@/constants/pins';
+
 export type Pin = {
   id: string;
   // 0-1, relative to the map image
@@ -8,17 +10,24 @@ export type Pin = {
   y: number;
   title: string;
   note: string;
-  color: string;
+  category: PinCategory;
 };
 
 const KEY = 'map-pins';
+
+// old pins only had a color, the colors match the categories in order
+function withCategory(pin: Pin & { color?: string }): Pin {
+  if (pin.category) return pin;
+  const match = PIN_CATEGORIES.find((c) => c.color === pin.color);
+  return { ...pin, category: match?.id ?? 'other' };
+}
 
 export function usePins() {
   const [pins, setPins] = useState<Pin[]>([]);
 
   useEffect(() => {
     AsyncStorage.getItem(KEY).then((saved) => {
-      if (saved) setPins(JSON.parse(saved));
+      if (saved) setPins(JSON.parse(saved).map(withCategory));
     });
   }, []);
 

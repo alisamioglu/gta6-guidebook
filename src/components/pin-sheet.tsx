@@ -12,11 +12,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { categoryColor, PIN_CATEGORIES } from '@/constants/pins';
 import { Spacing } from '@/constants/theme';
 import { Pin } from '@/hooks/use-pins';
 import { useTheme } from '@/hooks/use-theme';
-
-export const PIN_COLORS = ['#D4537E', '#1D9E75', '#EF9F27', '#7F77DD'];
 
 type Props = {
   pin: Pin;
@@ -31,7 +30,8 @@ export function PinSheet({ pin, isNew, onSave, onDelete, onClose }: Props) {
   const insets = useSafeAreaInsets();
   const [title, setTitle] = useState(pin.title);
   const [note, setNote] = useState(pin.note);
-  const [color, setColor] = useState(pin.color);
+  const [category, setCategory] = useState(pin.category);
+  const color = categoryColor(category);
 
   const inputStyle = [
     styles.input,
@@ -60,18 +60,25 @@ export function PinSheet({ pin, isNew, onSave, onDelete, onClose }: Props) {
             </Pressable>
           </View>
 
-          <View style={styles.colors}>
-            {PIN_COLORS.map((c) => (
-              <Pressable
-                key={c}
-                onPress={() => setColor(c)}
-                style={[
-                  styles.color,
-                  { backgroundColor: c },
-                  c === color && { borderColor: theme.text },
-                ]}
-              />
-            ))}
+          <View style={styles.categories}>
+            {PIN_CATEGORIES.map((c) => {
+              const selected = c.id === category;
+              return (
+                <Pressable
+                  key={c.id}
+                  onPress={() => setCategory(c.id)}
+                  style={[
+                    styles.category,
+                    { borderColor: c.color },
+                    selected && { backgroundColor: c.color },
+                  ]}>
+                  {!selected && <View style={[styles.categoryDot, { backgroundColor: c.color }]} />}
+                  <ThemedText type="small" style={selected && styles.categorySelected}>
+                    {c.label}
+                  </ThemedText>
+                </Pressable>
+              );
+            })}
           </View>
 
           <TextInput
@@ -105,7 +112,7 @@ export function PinSheet({ pin, isNew, onSave, onDelete, onClose }: Props) {
               </Pressable>
             )}
             <Pressable
-              onPress={() => onSave({ ...pin, title: title.trim() || 'Untitled', note, color })}
+              onPress={() => onSave({ ...pin, title: title.trim() || 'Untitled', note, category })}
               style={({ pressed }) => [
                 styles.button,
                 styles.flex,
@@ -155,16 +162,27 @@ const styles = StyleSheet.create({
     height: 12,
     borderRadius: 6,
   },
-  colors: {
+  categories: {
     flexDirection: 'row',
-    gap: Spacing.three,
+    flexWrap: 'wrap',
+    gap: Spacing.two,
   },
-  color: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 3,
-    borderColor: 'transparent',
+  category: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.one,
+    borderWidth: 1.5,
+    borderRadius: 999,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.one,
+  },
+  categoryDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  categorySelected: {
+    color: '#fff',
   },
   input: {
     borderRadius: Spacing.three,
