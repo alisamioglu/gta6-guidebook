@@ -8,9 +8,11 @@ import {
   useRef,
   useState,
 } from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Platform, Pressable, StatusBar, StyleSheet, Text, View } from 'react-native';
+import type { InterstitialAd } from 'react-native-google-mobile-ads';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { ads, startAds, unitId } from '@/ads/admob';
 import { Colors, Spacing } from '@/constants/theme';
 import { usePremium } from '@/hooks/use-premium';
 import { useT } from '@/i18n/language';
@@ -23,8 +25,9 @@ const AD_EVERY_MS = 0;
 const SKIP_AFTER = 5;
 
 const AdContext = createContext<() => void>(() => {});
+const ReadyContext = createContext(false);
 
-// fake full screen ad for now, the real one (AdMob interstitial) goes in maybeShow later
+// real AdMob interstitial in a dev/store build, the fake one in Expo Go and web
 export function InterstitialAdProvider({ children }: PropsWithChildren) {
   const t = useT();
   const { isPremium } = usePremium();
@@ -33,6 +36,47 @@ export function InterstitialAdProvider({ children }: PropsWithChildren) {
   const [visible, setVisible] = useState(false);
   const [seconds, setSeconds] = useState(SKIP_AFTER);
   const lastShown = useRef(0);
+  const [ready, setReady] = useState(false);
+  const interstitial = useRef<InterstitialAd | null>(null);
+  const loaded = useRef(false);
+
+  // consent first, then the sdk, once when the app opens
+  useEffect(() => {
+    startAds().then(setReady);
+  }, []);
+
+  // keep one interstitial loaded so it shows right away when needed
+  useEffect(() => {
+    if (!ready || !ads) return;
+    const ad = ads.InterstitialAd.createForAdRequest(unitId('interstitial'));
+    const { AdEventType } = ads;
+    let retry: ReturnType<typeof setTimeout>;
+    const subs = [
+      ad.addAdEventListener(AdEventType.LOADED, () => {
+        loaded.current = true;
+      }),
+      ad.addAdEventListener(AdEventType.OPENED, () => {
+        // the close button can end up under the status bar on ios
+        if (Platform.OS === 'ios') StatusBar.setHidden(true);
+      }),
+      ad.addAdEventListener(AdEventType.CLOSED, () => {
+        loaded.current = false;
+        if (Platform.OS === 'ios') StatusBar.setHidden(false);
+        ad.load();
+      }),
+      ad.addAdEventListener(AdEventType.ERROR, () => {
+        loaded.current = false;
+        retry = setTimeout(() => ad.load(), 30000);
+      }),
+    ];
+    interstitial.current = ad;
+    ad.load();
+    return () => {
+      subs.forEach((unsubscribe) => unsubscribe());
+      clearTimeout(retry);
+      interstitial.current = null;
+    };
+  }, [ready]);
 
   useEffect(() => {
     if (!visible) return;
@@ -42,6 +86,15 @@ export function InterstitialAdProvider({ children }: PropsWithChildren) {
 
   function maybeShow() {
     if (isPremium || visible || Date.now() - lastShown.current < AD_EVERY_MS) return;
+
+    if (ads) {
+      // no ad ready yet (still loading, no fill or no consent) just means no ad this time
+      if (!interstitial.current || !loaded.current) return;
+      lastShown.current = Date.now();
+      interstitial.current.show().catch(() => {});
+      return;
+    }
+
     lastShown.current = Date.now();
     setSeconds(SKIP_AFTER);
     setVisible(true);
@@ -62,7 +115,7 @@ export function InterstitialAdProvider({ children }: PropsWithChildren) {
 
   return (
     <AdContext value={show}>
-      {children}
+      <ReadyContext value={ready}>{children}</ReadyContext>
       <Modal
         visible={visible}
         animationType="fade"
@@ -108,6 +161,11 @@ export function InterstitialAdProvider({ children }: PropsWithChildren) {
       </Modal>
     </AdContext>
   );
+}
+
+// true once consent is done and the AdMob sdk started, banners wait for this
+export function useAdsReady() {
+  return useContext(ReadyContext);
 }
 
 // call it to try showing an ad, like when a mission opens or a new pin is saved

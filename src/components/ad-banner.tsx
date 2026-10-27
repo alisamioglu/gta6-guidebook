@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
+import { ads, unitId } from '@/ads/admob';
+import { useAdsReady } from '@/components/interstitial-ad';
 import { Colors, Spacing } from '@/constants/theme';
 import { useT } from '@/i18n/language';
 import { StringKey } from '@/i18n/strings';
@@ -11,7 +13,7 @@ import { StringKey } from '@/i18n/strings';
 const colors = Colors.dark;
 export const AD_HEIGHT = 56;
 
-// fake ads for now, just to hold the spot. real ads (AdMob) go here later
+// house ads, shown in Expo Go, on web, or when AdMob has nothing to show
 const ADS: {
   title: StringKey;
   text: StringKey;
@@ -43,6 +45,26 @@ const ADS: {
 ];
 
 export function AdBanner() {
+  const ready = useAdsReady();
+  const [failed, setFailed] = useState(false);
+
+  if (ads && ready && !failed) {
+    const { BannerAd, BannerAdSize } = ads;
+    return (
+      <View style={[styles.bar, styles.real]}>
+        <BannerAd
+          unitId={unitId('banner')}
+          size={BannerAdSize.BANNER}
+          onAdFailedToLoad={() => setFailed(true)}
+        />
+      </View>
+    );
+  }
+
+  return <HouseAd />;
+}
+
+function HouseAd() {
   const t = useT();
   const [index, setIndex] = useState(0);
   const ad = ADS[index];
@@ -113,6 +135,10 @@ const styles = StyleSheet.create({
     borderColor: colors.textSecondary,
     borderRadius: 4,
     paddingHorizontal: Spacing.one,
+  },
+  real: {
+    alignItems: 'center',
+    paddingHorizontal: 0,
   },
   badgeText: {
     color: colors.textSecondary,
