@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
+import { useShowAd } from '@/components/interstitial-ad';
 import { ThemedText } from '@/components/themed-text';
 import { Colors, Spacing } from '@/constants/theme';
 import { Difficulty, Mission } from '@/data/missions';
@@ -32,9 +33,16 @@ type Props = {
 
 export function MissionCard({ mission, number, done, note, onToggleDone, onChangeNote }: Props) {
   const [open, setOpen] = useState(false);
+  const showAd = useShowAd();
   const t = useT();
   const text = useMissionText()(mission);
   const difficultyColor = difficultyColors[mission.difficulty];
+
+  function toggle() {
+    // ad only when opening, not when closing
+    if (!open) showAd();
+    setOpen(!open);
+  }
 
   function showOnMap() {
     router.navigate({ pathname: '/map', params: { mission: mission.id, t: String(Date.now()) } });
@@ -58,7 +66,7 @@ export function MissionCard({ mission, number, done, note, onToggleDone, onChang
         </Pressable>
 
         <Pressable
-          onPress={() => setOpen(!open)}
+          onPress={toggle}
           style={({ pressed }) => [styles.headerText, pressed && styles.pressed]}>
           <View style={styles.flex}>
             <ThemedText style={[styles.title, done && styles.titleDone]}>

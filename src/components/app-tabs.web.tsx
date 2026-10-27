@@ -29,6 +29,9 @@ export default function AppTabs() {
           <TabTrigger name="map" href="/map" asChild>
             <TabButton>{t('map')}</TabButton>
           </TabTrigger>
+          <TabTrigger name="premium" href="/premium" asChild>
+            <TabButton>{t('premium')}</TabButton>
+          </TabTrigger>
         </CustomTabList>
       </TabList>
     </Tabs>

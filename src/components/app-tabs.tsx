@@ -24,6 +24,14 @@ export default function AppTabs() {
         <NativeTabs.Trigger.Label>{t('map')}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf={{ default: 'map', selected: 'map.fill' }} md="map" />
       </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="premium">
+        <NativeTabs.Trigger.Label>{t('premium')}</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          sf={{ default: 'crown', selected: 'crown.fill' }}
+          md="workspace_premium"
+        />
+      </NativeTabs.Trigger>
     </NativeTabs>
   );
 }
