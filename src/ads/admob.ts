@@ -12,11 +12,20 @@ export const ads: GoogleAds | null = isExpoGo
   : // eslint-disable-next-line @typescript-eslint/no-require-imports
     require('react-native-google-mobile-ads');
 
-// TODO: put the real ad unit ids from AdMob here (Apps > your app > Ad units)
+// real ad unit ids from AdMob (Apps > your app > Ad units)
 const UNITS = {
-  banner: { ios: '', android: '' },
-  interstitial: { ios: '', android: '' },
-  native: { ios: '', android: '' },
+  banner: {
+    ios: 'ca-app-pub-9734141534745644/8157491846',
+    android: 'ca-app-pub-9734141534745644/1616134220',
+  },
+  interstitial: {
+    ios: 'ca-app-pub-9734141534745644/7060032590',
+    android: 'ca-app-pub-9734141534745644/5650535976',
+  },
+  native: {
+    ios: 'ca-app-pub-9734141534745644/6209985355',
+    android: 'ca-app-pub-9734141534745644/8814213376',
+  },
 };
 
 export type AdKind = keyof typeof UNITS;
