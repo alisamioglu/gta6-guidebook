@@ -2,40 +2,51 @@ import { useState } from 'react';
 import { Platform, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { LanguagePicker } from '@/components/language-picker';
 import { MissionCard } from '@/components/mission-card';
+import { TabBarBackground, useTabBarHeight } from '@/components/tab-bar-background';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { BottomTabInset, Colors, MaxContentWidth, Spacing } from '@/constants/theme';
+import { Colors, MaxContentWidth, Spacing } from '@/constants/theme';
 import { missions } from '@/data/missions';
 import { useMissionProgress } from '@/hooks/use-mission-progress';
+import { useMissionText, useT } from '@/i18n/language';
 
 const colors = Colors.dark;
 
 export default function MissionsScreen() {
   const [search, setSearch] = useState('');
   const { completed, notes, toggleDone, setNote } = useMissionProgress();
+  const tabBarHeight = useTabBarHeight();
+  const t = useT();
+  const missionText = useMissionText();
 
   const query = search.trim().toLowerCase();
   // keep the original numbers when filtering
   const results = missions
     .map((mission, i) => ({ mission, number: i + 1 }))
-    .filter(({ mission }) => mission.title.toLowerCase().includes(query));
+    .filter(({ mission }) => missionText(mission).title.toLowerCase().includes(query));
 
   const doneCount = missions.filter((m) => completed.includes(m.id)).length;
 
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <View>
-            <ThemedText style={styles.kicker}>GTA 6 guide</ThemedText>
-            <ThemedText type="subtitle">Missions</ThemedText>
+        <ScrollView
+          contentContainerStyle={[styles.content, { paddingBottom: tabBarHeight + Spacing.four }]}
+          keyboardShouldPersistTaps="handled">
+          <View style={styles.header}>
+            <View>
+              <ThemedText style={styles.kicker}>{t('guide')}</ThemedText>
+              <ThemedText type="subtitle">{t('missions')}</ThemedText>
+            </View>
+            <LanguagePicker />
           </View>
 
           <View style={styles.progressCard}>
             <View style={styles.progressRow}>
               <ThemedText style={styles.progressText}>
-                {doneCount} / {missions.length} completed
+                {t('completed', { done: doneCount, total: missions.length })}
               </ThemedText>
               <ThemedText style={styles.progressPercent}>
                 {Math.round((doneCount / missions.length) * 100)}%
@@ -51,7 +62,7 @@ export default function MissionsScreen() {
           <TextInput
             value={search}
             onChangeText={setSearch}
-            placeholder="Search missions"
+            placeholder={t('searchMissions')}
             placeholderTextColor={colors.textSecondary}
             clearButtonMode="while-editing"
             autoCorrect={false}
@@ -72,11 +83,12 @@ export default function MissionsScreen() {
 
           {results.length === 0 && (
             <ThemedText type="small" themeColor="textSecondary">
-              No missions found for &quot;{search.trim()}&quot;
+              {t('noMissions', { query: search.trim() })}
             </ThemedText>
           )}
         </ScrollView>
       </SafeAreaView>
+      <TabBarBackground />
     </ThemedView>
   );
 }
@@ -96,7 +108,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     // web has the tab bar on top
     paddingTop: Platform.OS === 'web' ? Spacing.six + Spacing.four : Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.four,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
   },
   kicker: {
     fontSize: 13,

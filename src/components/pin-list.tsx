@@ -4,6 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-
 import { categoryColor } from '@/constants/pins';
 import { Spacing } from '@/constants/theme';
 import { Pin } from '@/hooks/use-pins';
+import { useT } from '@/i18n/language';
 
 type Props = {
   pins: Pin[];
@@ -11,6 +12,7 @@ type Props = {
 };
 
 export function PinList({ pins, onSelect }: Props) {
+  const t = useT();
   const [search, setSearch] = useState('');
 
   const query = search.trim().toLowerCase();
@@ -21,7 +23,7 @@ export function PinList({ pins, onSelect }: Props) {
   if (pins.length === 0) {
     return (
       <View style={styles.list}>
-        <Text style={styles.empty}>No pins yet. Long press the map to add one.</Text>
+        <Text style={styles.empty}>{t('noPins')}</Text>
       </View>
     );
   }
@@ -31,7 +33,7 @@ export function PinList({ pins, onSelect }: Props) {
       <TextInput
         value={search}
         onChangeText={setSearch}
-        placeholder="Search pins"
+        placeholder={t('searchPins')}
         placeholderTextColor="#8A8597"
         autoCorrect={false}
         style={styles.search}
@@ -55,7 +57,7 @@ export function PinList({ pins, onSelect }: Props) {
             </View>
           </Pressable>
         ))}
-        {results.length === 0 && <Text style={styles.empty}>No pins match</Text>}
+        {results.length === 0 && <Text style={styles.empty}>{t('noPinsMatch')}</Text>}
       </ScrollView>
     </View>
   );

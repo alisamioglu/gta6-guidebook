@@ -11,6 +11,8 @@ export type Pin = {
   title: string;
   note: string;
   category: PinCategory;
+  // file uris, older pins don't have this
+  photos?: string[];
 };
 
 const KEY = 'map-pins';

@@ -32,7 +32,16 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
-      ]
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Allow $(PRODUCT_NAME) to use the camera so you can add photos to your map notes.",
+          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos so you can add them to your map notes.",
+          "microphonePermission": false
+        }
+      ],
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true,

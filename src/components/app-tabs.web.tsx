@@ -10,22 +10,24 @@ import { SymbolView } from 'expo-symbols';
 import { Pressable, useColorScheme, View, StyleSheet } from 'react-native';
 
 import { Colors, MaxContentWidth, Spacing } from '@/constants/theme';
+import { useT } from '@/i18n/language';
 
 import { ExternalLink } from './external-link';
 import { ThemedText } from './themed-text';
 import { ThemedView } from './themed-view';
 
 export default function AppTabs() {
+  const t = useT();
   return (
     <Tabs>
       <TabSlot style={{ height: '100%' }} />
       <TabList asChild>
         <CustomTabList>
           <TabTrigger name="missions" href="/missions" asChild>
-            <TabButton>Missions</TabButton>
+            <TabButton>{t('missions')}</TabButton>
           </TabTrigger>
           <TabTrigger name="map" href="/map" asChild>
-            <TabButton>Map</TabButton>
+            <TabButton>{t('map')}</TabButton>
           </TabTrigger>
         </CustomTabList>
       </TabList>

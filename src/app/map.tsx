@@ -2,15 +2,7 @@ import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { useEffect, useRef, useState } from 'react';
-import {
-  LayoutChangeEvent,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { LayoutChangeEvent, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import {
   GestureDetector,
   useExclusiveGestures,
@@ -21,7 +13,7 @@ import {
   useTapGesture,
 } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
   MapPin,
@@ -33,11 +25,13 @@ import {
 } from '@/components/map-pin';
 import { PinList } from '@/components/pin-list';
 import { PinSheet } from '@/components/pin-sheet';
-import { categoryColor, PIN_CATEGORIES, PinCategory } from '@/constants/pins';
-import { BottomTabInset, Colors, Spacing } from '@/constants/theme';
+import { TabBarBackground, useTabBarHeight } from '@/components/tab-bar-background';
+import { categoryColor } from '@/constants/pins';
+import { Colors, Spacing } from '@/constants/theme';
 import { missions } from '@/data/missions';
 import { useMissionProgress } from '@/hooks/use-mission-progress';
 import { Pin, usePins } from '@/hooks/use-pins';
+import { useMissionText, useT } from '@/i18n/language';
 
 const MAP_RATIO = 1080 / 1290;
 const MAX_SCALE = 6;
@@ -51,12 +45,13 @@ function clamp(value: number, min: number, max: number) {
 export default function MapScreen() {
   const { pins, savePin, deletePin } = usePins();
   const { completed } = useMissionProgress();
-  const insets = useSafeAreaInsets();
+  const tabBarHeight = useTabBarHeight();
+  const t = useT();
+  const missionText = useMissionText();
   const params = useLocalSearchParams<{ mission?: string; t?: string }>();
   const [mapSize, setMapSize] = useState({ width: 0, height: 0 });
   const [editing, setEditing] = useState<Pin | null>(null);
   const [showList, setShowList] = useState(false);
-  const [filter, setFilter] = useState<PinCategory | 'all'>('all');
   const [layers, setLayers] = useState({ missions: true, notes: true });
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const highlightTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -69,11 +64,11 @@ export default function MapScreen() {
   const lastPan = useSharedValue({ x: 0, y: 0 });
   const pinching = useSharedValue(false);
 
-  const categoryPins = filter === 'all' ? pins : pins.filter((p) => p.category === filter);
-  const visiblePins = layers.notes ? categoryPins : [];
-  const showMissions = layers.missions && (filter === 'all' || filter === 'mission');
+  const visiblePins = layers.notes ? pins : [];
   const missionIndex = missions.findIndex((m) => m.id === params.mission);
   const mission = missions[missionIndex];
+  // coming from a mission always shows the mission markers, even if they were turned off
+  const showMissions = layers.missions || !!mission;
 
   function onLayout(e: LayoutChangeEvent) {
     const { width, height } = e.nativeEvent.layout;
@@ -175,10 +170,16 @@ export default function MapScreen() {
     },
   });
 
+  // the gesture can hold on to an old onTap, so always call the latest one
+  const latest = useRef({
+    onTap: (x: number, y: number) => {},
+    dropPin: (x: number, y: number) => {},
+  });
+
   const tap = useTapGesture({
     runOnJS: true,
     onDeactivate: (e) => {
-      if (!e.canceled) onTap(e.x, e.y);
+      if (!e.canceled) latest.current.onTap(e.x, e.y);
     },
   });
 
@@ -186,7 +187,7 @@ export default function MapScreen() {
   const longPress = useLongPressGesture({
     runOnJS: true,
     minDuration: 450,
-    onActivate: (e) => dropPin(e.x, e.y),
+    onActivate: (e) => latest.current.dropPin(e.x, e.y),
   });
 
   const taps = useExclusiveGestures(longPress, doubleTap, tap);
@@ -240,9 +241,13 @@ export default function MapScreen() {
       y: mapY / a.mapHeight,
       title: '',
       note: '',
-      category: filter === 'all' ? 'mission' : filter,
+      category: 'mission',
     });
   }
+
+  useEffect(() => {
+    latest.current = { onTap, dropPin };
+  });
 
   function goToPin(pin: Pin) {
     focusOn(pin.x, pin.y);
@@ -276,13 +281,20 @@ export default function MapScreen() {
 
   const isNew = !!editing && !pins.some((p) => p.id === editing.id);
   const shownPins = isNew ? [...visiblePins, editing] : visiblePins;
-  const countText =
-    filter === 'all'
-      ? `${pins.length} ${pins.length === 1 ? 'pin' : 'pins'}`
-      : `${visiblePins.length} of ${pins.length} pins`;
+  const countText = t(pins.length === 1 ? 'pinOne' : 'pinMany', { count: pins.length });
+
+  function toggleLayer(key: 'notes' | 'missions') {
+    if (key === 'missions' && showMissions) {
+      // also drop the selected mission, otherwise it keeps them on
+      if (mission) router.setParams({ mission: '', t: '' });
+      setLayers({ ...layers, missions: false });
+      return;
+    }
+    setLayers({ ...layers, [key]: !layers[key] });
+  }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingBottom: tabBarHeight }]}>
       <GestureDetector gesture={gesture}>
         <View style={styles.area} onLayout={onLayout}>
           <Animated.View style={[mapSize, mapStyle]}>
@@ -329,7 +341,7 @@ export default function MapScreen() {
               onPress={() => setShowList(!showList)}
               style={({ pressed }) => [styles.card, styles.pinsButton, pressed && styles.pressed]}>
               <View>
-                <Text style={styles.title}>Map</Text>
+                <Text style={styles.title}>{t('map')}</Text>
                 <Text style={styles.subtitle}>{countText}</Text>
               </View>
               <SymbolView
@@ -339,13 +351,13 @@ export default function MapScreen() {
                 style={{ transform: [{ rotate: showList ? '180deg' : '0deg' }] }}
               />
             </Pressable>
-            {showList && <PinList pins={categoryPins} onSelect={goToPin} />}
+            {showList && <PinList pins={pins} onSelect={goToPin} />}
           </View>
           <View style={styles.rightColumn} pointerEvents="box-none">
             <Pressable
               onPress={resetZoom}
               style={({ pressed }) => [styles.card, styles.resetButton, pressed && styles.pressed]}>
-              <Text style={styles.resetText}>Reset zoom</Text>
+              <Text style={styles.resetText}>{t('resetZoom')}</Text>
             </Pressable>
 
             <View style={[styles.card, styles.legend]}>
@@ -353,17 +365,17 @@ export default function MapScreen() {
                 [
                   {
                     key: 'notes',
-                    label: 'Your notes',
+                    label: t('yourNotes'),
                     icon: <PinShape color={categoryColor('collectible')} />,
                   },
-                  { key: 'missions', label: 'Missions', icon: <MissionBadge number={1} /> },
+                  { key: 'missions', label: t('missions'), icon: <MissionBadge number={1} /> },
                 ] as const
               ).map((layer) => {
-                const on = layers[layer.key];
+                const on = layer.key === 'missions' ? showMissions : layers.notes;
                 return (
                   <Pressable
                     key={layer.key}
-                    onPress={() => setLayers({ ...layers, [layer.key]: !on })}
+                    onPress={() => toggleLayer(layer.key)}
                     style={({ pressed }) => [styles.legendRow, pressed && styles.pressed]}>
                     <View style={[styles.check, on && styles.checkOn]}>
                       {on && (
@@ -385,17 +397,21 @@ export default function MapScreen() {
         </View>
       </SafeAreaView>
 
-      <View
-        style={[styles.bottom, { bottom: insets.bottom + BottomTabInset + Spacing.four }]}
-        pointerEvents="box-none">
-        {mission && showMissions ? (
+      <View style={[styles.bottom, { bottom: tabBarHeight + Spacing.three }]} pointerEvents="box-none">
+        {mission ? (
           <View style={styles.missionPill}>
             <View style={styles.missionDot} />
             <Text style={styles.missionText} numberOfLines={1}>
-              {missionIndex + 1}. {mission.title}
+              {missionIndex + 1}. {missionText(mission).title}
             </Text>
-            <Pressable onPress={() => router.setParams({ mission: '', t: '' })} hitSlop={10}>
-              <Text style={styles.missionClose}>Close</Text>
+            <Pressable
+              onPress={() => {
+                // keep the markers on after closing, the toggle already showed them as on
+                setLayers({ ...layers, missions: true });
+                router.setParams({ mission: '', t: '' });
+              }}
+              hitSlop={10}>
+              <Text style={styles.missionClose}>{t('close')}</Text>
             </Pressable>
           </View>
         ) : (
@@ -405,32 +421,12 @@ export default function MapScreen() {
               size={14}
               tintColor={Colors.dark.pink}
             />
-            <Text style={styles.hintText}>Press and hold to drop a pin</Text>
+            <Text style={styles.hintText}>{t('holdToPin')}</Text>
           </View>
         )}
-
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filters}>
-          {[{ id: 'all' as const, label: 'All', color: '#fff' }, ...PIN_CATEGORIES].map((c) => {
-            const selected = filter === c.id;
-            return (
-              <Pressable
-                key={c.id}
-                onPress={() => setFilter(c.id)}
-                style={[styles.filter, selected && { backgroundColor: c.color }]}>
-                {c.id !== 'all' && !selected && (
-                  <View style={[styles.filterDot, { backgroundColor: c.color }]} />
-                )}
-                <Text style={[styles.filterText, selected && styles.filterTextSelected]}>
-                  {c.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
       </View>
+
+      <TabBarBackground />
 
       {editing && (
         <PinSheet
@@ -596,32 +592,5 @@ const styles = StyleSheet.create({
   missionClose: {
     color: Colors.dark.textSecondary,
     fontSize: 13,
-  },
-  filters: {
-    gap: Spacing.two,
-    paddingHorizontal: Spacing.three,
-  },
-  filter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.one,
-    backgroundColor: 'rgba(14, 11, 20, 0.88)',
-    borderRadius: 999,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-  },
-  filterDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  filterText: {
-    color: '#fff',
-    fontSize: 13,
-    fontWeight: 500,
-  },
-  filterTextSelected: {
-    color: '#0E0B14',
-    fontWeight: 700,
   },
 });

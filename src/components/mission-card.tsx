@@ -7,6 +7,7 @@ import Animated, { FadeIn } from 'react-native-reanimated';
 import { ThemedText } from '@/components/themed-text';
 import { Colors, Spacing } from '@/constants/theme';
 import { Difficulty, Mission } from '@/data/missions';
+import { useMissionText, useT } from '@/i18n/language';
 
 const colors = Colors.dark;
 
@@ -31,6 +32,8 @@ type Props = {
 
 export function MissionCard({ mission, number, done, note, onToggleDone, onChangeNote }: Props) {
   const [open, setOpen] = useState(false);
+  const t = useT();
+  const text = useMissionText()(mission);
   const difficultyColor = difficultyColors[mission.difficulty];
 
   function showOnMap() {
@@ -59,12 +62,12 @@ export function MissionCard({ mission, number, done, note, onToggleDone, onChang
           style={({ pressed }) => [styles.headerText, pressed && styles.pressed]}>
           <View style={styles.flex}>
             <ThemedText style={[styles.title, done && styles.titleDone]}>
-              {number}. {mission.title}
+              {number}. {text.title}
             </ThemedText>
             <View style={styles.tags}>
               <View style={[styles.tag, { borderColor: difficultyColor }]}>
                 <ThemedText style={[styles.tagText, { color: difficultyColor }]}>
-                  {mission.difficulty}
+                  {t(mission.difficulty)}
                 </ThemedText>
               </View>
               <ThemedText style={styles.reward}>{formatMoney(mission.reward)}</ThemedText>
@@ -81,7 +84,7 @@ export function MissionCard({ mission, number, done, note, onToggleDone, onChang
 
       {open && (
         <Animated.View entering={FadeIn.duration(200)} style={styles.body}>
-          {mission.steps.map((step, i) => (
+          {text.steps.map((step, i) => (
             <View key={i} style={styles.step}>
               <View style={styles.stepNumber}>
                 <ThemedText style={styles.stepNumberText}>{i + 1}</ThemedText>
@@ -100,13 +103,13 @@ export function MissionCard({ mission, number, done, note, onToggleDone, onChang
               size={16}
               tintColor={colors.teal}
             />
-            <ThemedText style={styles.mapButtonText}>Show on map</ThemedText>
+            <ThemedText style={styles.mapButtonText}>{t('showOnMap')}</ThemedText>
           </Pressable>
 
           <TextInput
             value={note}
             onChangeText={onChangeNote}
-            placeholder="My tip for this mission..."
+            placeholder={t('missionTip')}
             placeholderTextColor={colors.textSecondary}
             multiline
             style={styles.note}
