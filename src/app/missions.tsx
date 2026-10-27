@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Platform, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useAdOnFocus } from '@/components/interstitial-ad';
 import { LanguagePicker } from '@/components/language-picker';
 import { MissionCard } from '@/components/mission-card';
 import { TabBarBackground, useTabBarHeight } from '@/components/tab-bar-background';
@@ -19,7 +18,6 @@ export default function MissionsScreen() {
   const [search, setSearch] = useState('');
   const { completed, notes, toggleDone, setNote } = useMissionProgress();
   const tabBarHeight = useTabBarHeight();
-  useAdOnFocus();
   const t = useT();
   const missionText = useMissionText();
 

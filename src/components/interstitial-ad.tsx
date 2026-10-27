@@ -1,16 +1,15 @@
-import { router, useFocusEffect } from 'expo-router';
+import { router } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import {
   createContext,
   PropsWithChildren,
-  useCallback,
   useContext,
   useEffect,
   useRef,
   useState,
 } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Colors, Spacing } from '@/constants/theme';
 import { usePremium } from '@/hooks/use-premium';
@@ -18,8 +17,8 @@ import { useT } from '@/i18n/language';
 
 const colors = Colors.dark;
 
-// 0 = every tab switch and every mission opened. raise this (like 3 * 60 * 1000)
-// before real AdMob ads go in, showing them this often breaks their rules
+// shows when a mission opens and when a new map pin is saved.
+// 0 = every time, raise it (like 3 * 60 * 1000) if real AdMob ads end up too often for their rules
 const AD_EVERY_MS = 0;
 const SKIP_AFTER = 5;
 
@@ -29,11 +28,11 @@ const AdContext = createContext<() => void>(() => {});
 export function InterstitialAdProvider({ children }: PropsWithChildren) {
   const t = useT();
   const { isPremium } = usePremium();
+  // safe area inside a modal can come back as 0 on ios, so take it from outside
+  const insets = useSafeAreaInsets();
   const [visible, setVisible] = useState(false);
   const [seconds, setSeconds] = useState(SKIP_AFTER);
   const lastShown = useRef(0);
-  // the first screen focus is the app opening, no ad there
-  const opened = useRef(false);
 
   useEffect(() => {
     if (!visible) return;
@@ -42,10 +41,6 @@ export function InterstitialAdProvider({ children }: PropsWithChildren) {
   }, [visible]);
 
   function maybeShow() {
-    if (!opened.current) {
-      opened.current = true;
-      return;
-    }
     if (isPremium || visible || Date.now() - lastShown.current < AD_EVERY_MS) return;
     lastShown.current = Date.now();
     setSeconds(SKIP_AFTER);
@@ -74,11 +69,13 @@ export function InterstitialAdProvider({ children }: PropsWithChildren) {
         onRequestClose={() => {
           if (seconds === 0) setVisible(false);
         }}>
-        <SafeAreaView style={styles.screen}>
-          <View style={styles.top}>
+        <View style={[styles.screen, { paddingBottom: insets.bottom }]}>
+          <View style={[styles.top, { paddingTop: insets.top + Spacing.three }]}>
             <Text style={styles.label}>{t('advertisement')}</Text>
             {seconds > 0 ? (
-              <Text style={styles.countdown}>{t('closeIn', { seconds })}</Text>
+              <View style={styles.countdownPill}>
+                <Text style={styles.countdown}>{t('closeIn', { seconds })}</Text>
+              </View>
             ) : (
               <Pressable onPress={() => setVisible(false)} hitSlop={12} style={styles.close}>
                 <SymbolView
@@ -107,25 +104,15 @@ export function InterstitialAdProvider({ children }: PropsWithChildren) {
               <Text style={styles.buttonText}>{t('goPremium')}</Text>
             </Pressable>
           </View>
-        </SafeAreaView>
+        </View>
       </Modal>
     </AdContext>
   );
 }
 
-// call it to try showing an ad, like when a mission gets opened
+// call it to try showing an ad, like when a mission opens or a new pin is saved
 export function useShowAd() {
   return useContext(AdContext);
-}
-
-// tab screens call this, the ad shows when you switch to them
-export function useAdOnFocus() {
-  const maybeShow = useContext(AdContext);
-  useFocusEffect(
-    useCallback(() => {
-      maybeShow();
-    }, [maybeShow]),
-  );
 }
 
 const styles = StyleSheet.create({
@@ -138,7 +125,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
+    paddingBottom: Spacing.two,
   },
   label: {
     color: colors.textSecondary,
@@ -147,9 +134,18 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
+  countdownPill: {
+    height: 36,
+    justifyContent: 'center',
+    backgroundColor: colors.backgroundSelected,
+    borderRadius: 18,
+    paddingHorizontal: Spacing.three,
+  },
   countdown: {
-    color: colors.textSecondary,
+    color: colors.text,
     fontSize: 13,
+    fontWeight: 600,
+    fontVariant: ['tabular-nums'],
   },
   close: {
     width: 36,

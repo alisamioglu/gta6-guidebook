@@ -23,7 +23,7 @@ import {
   PIN_SIZE,
   PinShape,
 } from '@/components/map-pin';
-import { useAdOnFocus } from '@/components/interstitial-ad';
+import { useShowAd } from '@/components/interstitial-ad';
 import { PinList } from '@/components/pin-list';
 import { PinSheet } from '@/components/pin-sheet';
 import { TabBarBackground, useTabBarHeight } from '@/components/tab-bar-background';
@@ -47,7 +47,7 @@ export default function MapScreen() {
   const { pins, savePin, deletePin } = usePins();
   const { completed } = useMissionProgress();
   const tabBarHeight = useTabBarHeight();
-  useAdOnFocus();
+  const showAd = useShowAd();
   const t = useT();
   const missionText = useMissionText();
   const params = useLocalSearchParams<{ mission?: string; t?: string }>();
@@ -439,6 +439,8 @@ export default function MapScreen() {
           onSave={(pin) => {
             savePin(pin);
             setEditing(null);
+            // only for new pins, editing an old one stays ad free
+            if (isNew) showAd();
           }}
           onDelete={(id) => {
             deletePin(id);
