@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { Platform, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { LanguagePicker } from '@/components/language-picker';
 import { MissionCard } from '@/components/mission-card';
+import { NativeAdCard } from '@/components/native-ad-card';
 import { TabBarBackground, useTabBarHeight } from '@/components/tab-bar-background';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -13,11 +14,14 @@ import { useMissionProgress } from '@/hooks/use-mission-progress';
 import { useMissionText, useT } from '@/i18n/language';
 
 const colors = Colors.dark;
+// a native ad after these spots in the list
+const AD_AFTER = [5, 15];
 
 export default function MissionsScreen() {
   const [search, setSearch] = useState('');
   const { completed, notes, toggleDone, setNote } = useMissionProgress();
-  const tabBarHeight = useTabBarHeight();
+  // no ad bar here, the ads sit inside the list instead
+  const tabBarHeight = useTabBarHeight(false);
   const t = useT();
   const missionText = useMissionText();
 
@@ -69,16 +73,18 @@ export default function MissionsScreen() {
             style={styles.search}
           />
 
-          {results.map(({ mission, number }) => (
-            <MissionCard
-              key={mission.id}
-              mission={mission}
-              number={number}
-              done={completed.includes(mission.id)}
-              note={notes[mission.id] ?? ''}
-              onToggleDone={() => toggleDone(mission.id)}
-              onChangeNote={(note) => setNote(mission.id, note)}
-            />
+          {results.map(({ mission, number }, i) => (
+            <Fragment key={mission.id}>
+              <MissionCard
+                mission={mission}
+                number={number}
+                done={completed.includes(mission.id)}
+                note={notes[mission.id] ?? ''}
+                onToggleDone={() => toggleDone(mission.id)}
+                onChangeNote={(note) => setNote(mission.id, note)}
+              />
+              {AD_AFTER.includes(i + 1) && <NativeAdCard />}
+            </Fragment>
           ))}
 
           {results.length === 0 && (
@@ -88,7 +94,7 @@ export default function MissionsScreen() {
           )}
         </ScrollView>
       </SafeAreaView>
-      <TabBarBackground />
+      <TabBarBackground withAd={false} />
     </ThemedView>
   );
 }
