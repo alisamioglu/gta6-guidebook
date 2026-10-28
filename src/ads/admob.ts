@@ -42,15 +42,25 @@ export function unitId(kind: AdKind) {
   return real;
 }
 
-// ask for consent (EU / ATT) first, then start the sdk
+// ask for consent (EU / ATT) first, then start the sdk.
+// if the consent step itself breaks (like no privacy message set up in AdMob yet)
+// we still start, outside the EU no consent is needed anyway
 export async function startAds() {
   if (!ads) return false;
   try {
     const { canRequestAds } = await ads.AdsConsent.gatherConsent();
-    if (!canRequestAds) return false;
+    if (!canRequestAds) {
+      console.warn('[ads] user did not give consent, no ads');
+      return false;
+    }
+  } catch (e) {
+    console.warn('[ads] consent step failed, starting anyway', e);
+  }
+  try {
     await ads.default().initialize();
     return true;
-  } catch {
+  } catch (e) {
+    console.warn('[ads] AdMob failed to start', e);
     return false;
   }
 }

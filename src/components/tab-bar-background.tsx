@@ -2,15 +2,15 @@ import { Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AD_HEIGHT, AdBanner } from '@/components/ad-banner';
-import { BottomTabInset, Colors } from '@/constants/theme';
+import { Colors } from '@/constants/theme';
 import { usePremium } from '@/hooks/use-premium';
 
-// height of the tab bar itself. on ios the bottom inset already includes it, web has tabs on top
+// height of the tab bar itself. on ios the screen goes under it and the bottom inset covers it,
+// on android the screen already stops above it, web has tabs on top
 function useTabsOnly() {
   const insets = useSafeAreaInsets();
-  if (Platform.OS === 'web') return 0;
   if (Platform.OS === 'ios') return insets.bottom;
-  return insets.bottom + BottomTabInset;
+  return 0;
 }
 
 // everything covered at the bottom: tab bar plus the ad bar (gone for premium)

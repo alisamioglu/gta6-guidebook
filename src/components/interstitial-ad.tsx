@@ -64,7 +64,8 @@ export function InterstitialAdProvider({ children }: PropsWithChildren) {
         if (Platform.OS === 'ios') StatusBar.setHidden(false);
         ad.load();
       }),
-      ad.addAdEventListener(AdEventType.ERROR, () => {
+      ad.addAdEventListener(AdEventType.ERROR, (e) => {
+        console.warn('[ads] interstitial failed:', e.message);
         loaded.current = false;
         retry = setTimeout(() => ad.load(), 30000);
       }),

@@ -21,14 +21,16 @@ export function NativeAdCard() {
 function RealNativeAd() {
   const ready = useAdsReady();
   const google = ads!;
-  const { status, nativeAd } = google.useNativeAd({
+  const { status, nativeAd, error } = google.useNativeAd({
     adUnitId: unitId('native'),
     autoLoad: ready,
     requestOptions: { aspectRatio: google.NativeMediaAspectRatio.LANDSCAPE },
   });
+  if (error) console.warn('[ads] native ad:', status, error.message);
 
-  if (status === 'no-fill' || status === 'error') return <HouseNativeAd />;
-  // nothing while it loads, better than the house card jumping into a real one
+  // our own card until AdMob is up or when it has nothing,
+  // only blank for the short moment it's actually loading
+  if (!ready || status === 'no-fill' || status === 'error') return <HouseNativeAd />;
   if (!nativeAd) return null;
 
   const { NativeAdView, NativeAsset, NativeAssetType, NativeMediaView } = google;

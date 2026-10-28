@@ -55,7 +55,10 @@ export function AdBanner() {
         <BannerAd
           unitId={unitId('banner')}
           size={BannerAdSize.BANNER}
-          onAdFailedToLoad={() => setFailed(true)}
+          onAdFailedToLoad={(e) => {
+            console.warn('[ads] banner failed:', e.message);
+            setFailed(true);
+          }}
         />
       </View>
     );
