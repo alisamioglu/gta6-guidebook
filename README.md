@@ -1,56 +1,80 @@
-# Welcome to your Expo app 👋
+<p align="center">
+  <img src="store/play-icon-512.png" width="120" alt="GTA 6 Guidebook icon" />
+</p>
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+<h1 align="center">GTA 6 Guidebook</h1>
 
-## Get started
+<p align="center">
+  An unofficial fan-made companion app for GTA 6: mission walkthroughs and a map you can pin and take notes on.
+</p>
 
-1. Install dependencies
+<p align="center">
+  <img src="store/screenshots/01-missions.png" width="200" alt="Missions" />
+  <img src="store/screenshots/02-walkthrough.png" width="200" alt="Walkthrough" />
+  <img src="store/screenshots/03-map.png" width="200" alt="Map" />
+  <img src="store/screenshots/04-notes.png" width="200" alt="Notes" />
+</p>
 
-   ```bash
-   npm install
-   ```
+> GTA 6 Guidebook is not affiliated with, endorsed by, or connected to Rockstar Games or
+> Take-Two Interactive. All trademarks belong to their respective owners. The missions in the app
+> are placeholders until the game is out.
 
-2. Start the app
+## Features
 
-   ```bash
-   npx expo start
-   ```
+**Missions**
+- Step by step walkthroughs, difficulty and reward for every mission
+- Tick missions off and track progress
+- Personal tips per mission, mission search
+- "Show on map" jumps straight to the mission on the map
 
-In the output, you'll find options to open the app in a
+**Map**
+- Pinch to zoom, drag, double tap to zoom in
+- Press and hold to drop a pin with a title, note, category and photos (camera or gallery)
+- Every mission is marked on the map, notes and missions can be shown or hidden
+- Pin list with search, the selected pin gets a short highlight ring
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+**General**
+- Dark neon theme
+- English, Türkçe, Español, Deutsch, Français (starts with the phone language)
+- Works offline, all notes and photos stay on the device
+- Google AdMob ads (banner, interstitial, native) and a one-time Premium purchase through RevenueCat that removes them
 
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Tech
 
-## Get a fresh project
+- [Expo](https://expo.dev) SDK 58, React Native, TypeScript, [Expo Router](https://docs.expo.dev/router/introduction/)
+- `react-native-gesture-handler` and `react-native-reanimated` for the map gestures
+- `react-native-google-mobile-ads` for ads, `react-native-purchases` (RevenueCat) for Premium
+- `@react-native-async-storage/async-storage` and `expo-file-system` for local data and photos
 
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+src/
+  app/          screens (missions, map, premium)
+  components/   UI pieces (mission card, pin sheet, ads, tab bar...)
+  hooks/        pins, mission progress, premium state
+  i18n/         translations for the UI and the missions
+  data/         mission list
+  ads/          AdMob setup and ad unit ids
+docs/           privacy policy (GitHub Pages)
+store/          Play Store texts, icon, feature graphic and screenshots
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+## Running it
 
-### Other setup steps
+```bash
+npm install
+npx expo start
+```
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+The app opens in **Expo Go** with fake ads and a test mode Premium. Real ads and purchases need a
+development build, since they use native code:
 
-## Learn more
+```bash
+npx eas-cli@latest build --profile development --platform android
+npx expo start --dev-client
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+Development builds always show Google's test ads. Real ad units are only used in release builds.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Privacy
 
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Privacy policy: https://alisamioglu.github.io/gta6-guidebook/privacy.html
