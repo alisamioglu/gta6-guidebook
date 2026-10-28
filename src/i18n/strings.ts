@@ -69,6 +69,7 @@ const en = {
   adTipText: 'Hold the map to drop a pin with photos.',
   adLanguageTitle: '5 languages',
   adLanguageText: 'Change the language from the missions screen.',
+  purchaseFailed: 'The purchase did not go through. Please try again.',
 };
 
 export type StringKey = keyof typeof en;
@@ -134,6 +135,7 @@ const tr: Record<StringKey, string> = {
   adTipText: 'Fotoğraflı iğne için haritaya basılı tut.',
   adLanguageTitle: '5 dil',
   adLanguageText: 'Dili görevler ekranından değiştirebilirsin.',
+  purchaseFailed: 'Satın alma tamamlanamadı. Lütfen tekrar dene.',
 };
 
 const es: Record<StringKey, string> = {
@@ -197,6 +199,7 @@ const es: Record<StringKey, string> = {
   adTipText: 'Mantén pulsado el mapa para un marcador con fotos.',
   adLanguageTitle: '5 idiomas',
   adLanguageText: 'Cambia el idioma desde la pantalla de misiones.',
+  purchaseFailed: 'La compra no se completó. Inténtalo de nuevo.',
 };
 
 const de: Record<StringKey, string> = {
@@ -260,6 +263,7 @@ const de: Record<StringKey, string> = {
   adTipText: 'Halte die Karte gedrückt für einen Pin mit Fotos.',
   adLanguageTitle: '5 Sprachen',
   adLanguageText: 'Ändere die Sprache auf dem Missionsbildschirm.',
+  purchaseFailed: 'Der Kauf hat nicht geklappt. Bitte versuch es noch einmal.',
 };
 
 const fr: Record<StringKey, string> = {
@@ -323,6 +327,7 @@ const fr: Record<StringKey, string> = {
   adTipText: 'Appuie longuement sur la carte pour un repère avec photos.',
   adLanguageTitle: '5 langues',
   adLanguageText: 'Change la langue depuis l’écran des missions.',
+  purchaseFailed: 'L’achat n’a pas abouti. Réessaie.',
 };
 
 export const strings: Record<Language, Record<StringKey, string>> = { en, tr, es, de, fr };

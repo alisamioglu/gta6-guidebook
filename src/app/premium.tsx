@@ -11,8 +11,8 @@ import { StringKey } from '@/i18n/strings';
 
 const colors = Colors.dark;
 
-// placeholder until the store product is set up
-const PRICE = '$2.99';
+// shown until the store sends the real price, or in test mode
+const FALLBACK_PRICE = '$2.99';
 
 const BENEFITS: { text: StringKey; icon: SymbolViewProps['name'] }[] = [
   { text: 'benefitNoBanner', icon: { ios: 'rectangle.slash', android: 'block', web: 'block' } },
@@ -25,11 +25,21 @@ const BENEFITS: { text: StringKey; icon: SymbolViewProps['name'] }[] = [
 
 export default function PremiumScreen() {
   const t = useT();
-  const { isPremium, buy, restore, reset } = usePremium();
+  const { isPremium, isTestMode, price, buy, restore, reset } = usePremium();
   const tabBarHeight = useTabBarHeight(false);
   const [message, setMessage] = useState('');
+  const [buying, setBuying] = useState(false);
+
+  async function onBuy() {
+    setMessage('');
+    setBuying(true);
+    const result = await buy();
+    setBuying(false);
+    if (result === 'failed') setMessage(t('purchaseFailed'));
+  }
 
   async function onRestore() {
+    setMessage('');
     const found = await restore();
     if (!found) setMessage(t('restoreNone'));
   }
@@ -75,13 +85,14 @@ export default function PremiumScreen() {
           {!isPremium && (
             <>
               <View style={styles.priceCard}>
-                <Text style={styles.price}>{PRICE}</Text>
+                <Text style={styles.price}>{price ?? FALLBACK_PRICE}</Text>
                 <Text style={styles.priceNote}>{t('oneTime')}</Text>
               </View>
 
               <Pressable
-                onPress={buy}
-                style={({ pressed }) => [styles.buyButton, pressed && styles.pressed]}>
+                onPress={onBuy}
+                disabled={buying}
+                style={({ pressed }) => [styles.buyButton, (pressed || buying) && styles.pressed]}>
                 <Text style={styles.buyText}>{t('buyPremium')}</Text>
               </Pressable>
 
@@ -92,8 +103,8 @@ export default function PremiumScreen() {
             </>
           )}
 
-          <Text style={styles.testNote}>{t('testMode')}</Text>
-          {isPremium && (
+          {isTestMode && <Text style={styles.testNote}>{t('testMode')}</Text>}
+          {isTestMode && isPremium && (
             <Pressable onPress={reset} hitSlop={8} style={styles.restore}>
               <Text style={styles.restoreText}>{t('resetPremium')}</Text>
             </Pressable>
