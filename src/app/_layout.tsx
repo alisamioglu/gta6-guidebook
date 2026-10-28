@@ -3,9 +3,9 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import AppTabs from '@/components/app-tabs';
 import { InterstitialAdProvider } from '@/components/interstitial-ad';
+import { SplashOverlay } from '@/components/splash-overlay';
 import { PremiumProvider } from '@/hooks/use-premium';
 import { LanguageProvider } from '@/i18n/language';
 
@@ -18,7 +18,7 @@ export default function TabLayout() {
         <PremiumProvider>
           <InterstitialAdProvider>
             <ThemeProvider value={DarkTheme}>
-              <AnimatedSplashOverlay />
+              <SplashOverlay />
               <AppTabs />
             </ThemeProvider>
           </InterstitialAdProvider>
