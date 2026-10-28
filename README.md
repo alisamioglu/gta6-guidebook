@@ -78,3 +78,8 @@ Development builds always show Google's test ads. Real ad units are only used in
 ## Privacy
 
 Privacy policy: https://alisamioglu.github.io/gta6-guidebook/privacy.html
+
+## License
+
+All rights reserved. The code is public to look at, but it can't be copied, reused or
+redistributed without permission. See [LICENSE](LICENSE).
