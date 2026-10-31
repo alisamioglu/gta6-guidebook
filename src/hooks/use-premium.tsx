@@ -9,18 +9,17 @@ type Purchases = typeof import('react-native-purchases').default;
 // RevenueCat public sdk keys, not secret, they ship inside the app
 const API_KEYS = {
   android: 'goog_KkmTggLshBxVAiRCqWynphuwCIz',
-  // TODO: add the appl_ key once the ios app is in RevenueCat
-  ios: '',
+  ios: 'appl_NnULqqyNRkvtdZnJopCDYwYtuPL',
 };
 const ENTITLEMENT = 'premium';
 
 const apiKey = Platform.OS === 'ios' ? API_KEYS.ios : API_KEYS.android;
 const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
-// no native store code in Expo Go or on web, and no key yet on ios,
+// no native store code in Expo Go or on web,
 // those keep the old test mode where buying just flips the switch
 const purchases: Purchases | null =
-  isExpoGo || Platform.OS === 'web' || !apiKey
+  isExpoGo || Platform.OS === 'web'
     ? null
     : // eslint-disable-next-line @typescript-eslint/no-require-imports
       require('react-native-purchases').default;
