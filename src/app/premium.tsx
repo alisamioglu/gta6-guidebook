@@ -1,3 +1,4 @@
+import { getLocales } from 'expo-localization';
 import { SymbolView, SymbolViewProps } from 'expo-symbols';
 import { useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -11,8 +12,9 @@ import { StringKey } from '@/i18n/strings';
 
 const colors = Colors.dark;
 
-// shown until the store sends the real price, or in test mode
-const FALLBACK_PRICE = '$2.99';
+// shown until the store sends the real price, or in test mode.
+// same prices as in the stores: 99,99 TL in Turkey, $1.99 everywhere else
+const FALLBACK_PRICE = getLocales()[0]?.regionCode === 'TR' ? '99,99 TL' : '$1.99';
 
 const BENEFITS: { text: StringKey; icon: SymbolViewProps['name'] }[] = [
   { text: 'benefitNoBanner', icon: { ios: 'rectangle.slash', android: 'block', web: 'block' } },
